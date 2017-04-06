@@ -9,35 +9,79 @@ import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class JSParser {
+public class DeclaredUnusedDetector {
 	
 	static Map<String,Variable> variableCounter = new HashMap<String,Variable>();
-	
+	static Map<String,Integer> functionNames = new HashMap<>();
+	static Map<String,Integer> unDeclaredFunctions = new HashMap<>();
+	static Set<Variable> braceDetector = new HashSet<Variable>();
+	static Stack<LineAndNumber> st = new Stack<LineAndNumber>();
+	static boolean checkBrace = false;
+	static String conditionType= "";
+	static 	String previous_line="";
 
 	//Map to store declared variables 
 	
 	public static void main(String[] args) {
 		//Read JS File.
-		
-		checkVariables();
-		checkFunction();
-		checkIfElse();
-		checkBraces();
-		
-		
-	}
-	
-	private static void checkVariables(){
-		// File Reader to read the JS File.
 		int lineCount = 0;
 		BufferedReader reader = null;
 		try {
+			String line ="";
 			reader = new BufferedReader(new FileReader("input.txt"));
-			
-			//Read Each Line.
-			String line = "";
 			while ((line = reader.readLine()) != null) {
-				lineCount = lineCount + 1;
+				lineCount += 1;
+		checkVariables(line,lineCount);
+		checkFunction(line,lineCount);
+		checkIfElse(line,lineCount);
+		checkBraces(line,lineCount);
+			}
+		}catch(Exception ex){
+			ex.printStackTrace();
+		}
+	//	
+	//	
+	//	
+		//print variables
+		for(java.util.Map.Entry<String, Variable> entry : variableCounter.entrySet()){
+			String var = entry.getKey();
+			Variable variable = entry.getValue();
+			if(variable.getCount()==1){
+				System.out.println("Variable Unused: "+ var + " declared at Line Number: "+variable.getLineNumber());
+			}
+		}
+		
+		//print function
+		Set<String> keys = unDeclaredFunctions.keySet();
+		for(String key: keys){
+			if(key.contains("if") || key.contains("for") || key.contains("catch") || key.contains("while")
+					|| key.contains("switch") || key.contains("console.log")){
+				//Removal functionality in Map is not included to avoid concurrent modification exception.
+			}else{
+				System.out.println("The function : "+key+ " in line : "+ unDeclaredFunctions.get(key)+  " never declared");
+			}
+		}
+		
+		//print if else
+		for(Variable var: braceDetector){
+			System.out.println("Missing Paranthesis for : "+ var.getName()+" block at line number: "+var.getLineNumber());
+		}
+		
+		
+		//print missing braces
+		
+		while(!st.empty()){
+			System.out.println("Missing brace at "+st.pop());
+		  }
+		
+	}
+	
+	private static void checkVariables(String line, int lineCount){
+		// File Reader to read the JS File.
+		
+		try {
+			
+				
 			
 				if(line.contains("var")||line.contains("let")){
 					int count = checkMultipleOccurancesOfVar(line);
@@ -93,20 +137,7 @@ public class JSParser {
 					}
 					
 				}
-			
-			}
-			
-			
-			for(java.util.Map.Entry<String, Variable> entry : variableCounter.entrySet()){
-				String var = entry.getKey();
-				Variable variable = entry.getValue();
-				if(variable.getCount()==1){
-					System.out.println("Variable Unused: "+ var + " declared at Line Number: "+variable.getLineNumber());
-				}
-			}
-			
-			
-			
+					
 			
 		} catch (Exception ex) {
 			ex.printStackTrace();
@@ -114,22 +145,10 @@ public class JSParser {
 		
 	}
 	
-	private static void checkFunction(){
+	private static void checkFunction(String line, int lineCount){
 		
-		Map<String,Integer> functionNames = new HashMap<>();
-		Map<String,Integer> unDeclaredFunctions = new HashMap<>();
-		
-		int lineCount = 0;
-		BufferedReader reader = null;
 		try {
-			reader = new BufferedReader(new FileReader("input.txt"));
-			
-			//Read Each Line.
-			String line = "";
-			boolean checkBrace = false;
-			String conditionType= "";
-			while ((line = reader.readLine()) != null) {
-				lineCount = lineCount + 1;
+
 				
 				if(line.contains("function")){
 					String[] funDeclaration = line.split("\\(");
@@ -155,18 +174,10 @@ public class JSParser {
 					}
 					
 				}				
-			}
 			
 			
-			Set<String> keys = unDeclaredFunctions.keySet();
-			for(String key: keys){
-				if(key.contains("if") || key.contains("for") || key.contains("catch") || key.contains("while")
-						|| key.contains("switch") || key.contains("console.log")){
-					//Removal functionality in Map is not included to avoid concurrent modification exception.
-				}else{
-					System.out.println("The function : "+key+ " in line : "+ unDeclaredFunctions.get(key)+  " never declared");
-				}
-			}
+			
+			
 			
 		}catch(Exception e){
 			e.printStackTrace();
@@ -175,21 +186,9 @@ public class JSParser {
 	
 	
 	
-private static void checkIfElse(){
-		
-		Set<Variable> braceDetector = new HashSet<Variable>();
-		int lineCount = 0;
-		BufferedReader reader = null;
-		try {
-			reader = new BufferedReader(new FileReader("input.txt"));
+private static void checkIfElse(String line,int lineCount){
 			
-			//Read Each Line.
-			String line = "";
-			boolean checkBrace = false;
-			String conditionType= "";
-			while ((line = reader.readLine()) != null) {
-				lineCount = lineCount + 1;
-				
+		try {
 				if(checkBrace){
 					if(!line.contains("{")){
 						Variable var = new Variable();
@@ -216,11 +215,9 @@ private static void checkIfElse(){
 				
 		
 			
-			}
 			
-			for(Variable var: braceDetector){
-				System.out.println("Missing Paranthesis for : "+ var.getName()+" block at line number: "+var.getLineNumber());
-			}
+			
+			
 			
 		}catch(Exception e){
 			
@@ -229,17 +226,13 @@ private static void checkIfElse(){
 	}
 
 
-private static void checkBraces(){
-	int lineno=0;
-	Stack<LineAndNumber> st = new Stack<LineAndNumber>();
-	try{
-	FileReader fr = new FileReader("input.txt");
-	BufferedReader br = new BufferedReader(fr);
+private static void checkBraces(String line,int lineno){
 	
-	String line="";
-	String previous_line="";
-	while((line = br.readLine())!=null){
-		lineno++;
+	
+	try{
+	
+	
+	
 		line = line.trim();
 		if(line.contains("){")){
 			previous_line = line;
@@ -274,11 +267,8 @@ private static void checkBraces(){
 		}
 		}
 		
-	}
-	while(!st.empty()){
-		System.out.println("Missing brace at "+st.pop());
-	  }
-	br.close();
+
+	
 	}catch(Exception ex){
 		ex.printStackTrace();
 	}
