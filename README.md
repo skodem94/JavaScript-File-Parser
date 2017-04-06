@@ -1,8 +1,6 @@
-# kingsmen-software-apprentice-programming-challenge
+# Kingsmen Software Apprentice Programming Challenge
 JavaScript File Parser
-
-This is a command line program that accepts as a command line argument as name of the JavaScript file and parser the code to find and locate un used declared variables, one line if/else statements that don’t have curly brackets, function calls that have not been declared, any missing/extra curly brackets.
-
+This is a command line program that accepts a command line argument, a name of the JavaScript file and is used for parsing the code to find and locate un-used declared variables, one line if/else statements that don’t have curly brackets, function calls that have not been declared, any missing/extra curly brackets.
 Installation Steps and Procedure to Run the Program:
 
 Programming Language Used:
