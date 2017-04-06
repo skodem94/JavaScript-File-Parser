@@ -9,7 +9,7 @@ import java.util.regex.Pattern;
 public class DeclaredUnusedDetector {
 	
 	static Map<String,Variable> variableCounter = new HashMap<String,Variable>();
-	
+	//Map to store declared variables 
 	
 	public static void main(String[] args) {
 		//Read JS File.
@@ -28,14 +28,17 @@ public class DeclaredUnusedDetector {
 			String line = "";
 			while ((line = reader.readLine()) != null) {
 				lineCount = lineCount + 1;
-				if(line.contains("var")){
+				if(line.contains("var")||line.contains("let")){
 					int count = checkMultipleOccurancesOfVar(line);
 					
 					if(count > 1){
-						
+						//Variables separated by semicolon.
 						String[] variables = line.split(";");
 						for(String var: variables){	
+							if(var.contains("var"))
 							var= var.replace("var ", "");
+							else
+								var=var.replaceAll("let", "");
 							if(var.contains(",")){
 								//Variables seperated by comma.
 								String[] varComma = var.split(",");
@@ -79,7 +82,6 @@ public class DeclaredUnusedDetector {
 				}
 			}
 			
-			System.out.println(variableCounter.toString());
 			
 			for(java.util.Map.Entry<String, Variable> entry : variableCounter.entrySet()){
 				String var = entry.getKey();
@@ -119,11 +121,13 @@ public class DeclaredUnusedDetector {
 	
 	private static int checkMultipleOccurancesOfVar(String line){
 		int count = 0;
-		
+		//check for multiple occurances of var string in a line.
 		Pattern p = Pattern.compile("var");
+		Pattern p1 = Pattern.compile("let");
 		Matcher m = p.matcher(line);
+		Matcher m1 = p1.matcher(line);
 		
-		while (m.find()){
+		while (m.find()||m1.find()){
 		    count +=1;
 		}
 		
