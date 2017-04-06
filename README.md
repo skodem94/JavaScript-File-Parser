@@ -7,8 +7,10 @@ Installation Steps and Procedure to Run the Program:
 
 Programming Language Used:
 The programming Language used is: Java
- File Structure:
+File Structure:
 -	JSParser.java
+- Variable.java
+- LineAndNumber.java
 -	README.docx
 
 The above folder JSParser.java, README.docx file.
@@ -36,6 +38,7 @@ Running program in eclipse:
 3.	Select the JSParser.java file.
 4.	Right click and run as Run Configurations. 
 5.	In the arguments tab, give the path of the javascript file and run the program.
-    path example - C:\Users\Varshini\Desktop\input.js
+
+path example - C:\Users\Varshini\Desktop\input.js
 
  
