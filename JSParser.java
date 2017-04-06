@@ -9,7 +9,10 @@ import java.util.Set;
 import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
+/* This class is responsible for parsing the Javascript file to automatically detect any unused variables, any conditional statements which doesn't use the braces,
+* and function calls which are not being declared.
+*@Author: Sree Gouri Varshini Kodem.
+*/
 public class JSParser {
 	
 	//map to store variable declared and number of times they have been used
@@ -30,11 +33,12 @@ public class JSParser {
 	public static void main(String[] args) {
 		//Read JS File.
 		int lineCount = 0;
-		int flag1=0,flag2=0,flag3=0;
+		int singleLineFlag=0,multiLineFlag=0;
 		BufferedReader reader = null;
 		// Input file taken from command line arguments
 		String filename = args[0];
 		File jsFile = new File(filename);
+		
 		//check if file exists
 		if(!jsFile.exists())
 		{
@@ -55,7 +59,7 @@ public class JSParser {
 			//Read file line by line
 			while ((line = reader.readLine()) != null) {
 				lineCount += 1;
-				flag1=0;
+				singleLineFlag=0;
 				//check if the line contains single line comment 
 				if(line.contains("//")){
 					String lines[] = line.split("//");
@@ -65,33 +69,33 @@ public class JSParser {
 						
 					}
 					else{
-						flag1=1;
+						singleLineFlag=1;
 					}
 				}
 				//check if line has a multi line comment
 				if(line.contains("/*")){
-					String lines[] = line.split("\\/*");
+					String lines[] = line.split(Pattern.quote("/*"));
 					if(lines.length>1){
 						line = lines[0];
 						
 					}
-					flag2=1;
+					multiLineFlag=1;
 				}
 				//check for end of multi line comment
 				if(line.contains("*/")){
 					
-					String lines[] = line.split("\\*/");
+					String lines[] = line.split(Pattern.quote("*/"));
 					if(lines.length>1){
 						line = lines[1];
-						flag2=0;
+						multiLineFlag=0;
 					}
 					else{
 						line="";
-						flag2=0;
+						multiLineFlag=0;
 					}
 				}
 				//if there are no comments proceed
-				if(flag1==0 && flag2==0){
+				if(singleLineFlag==0 && multiLineFlag==0){
 					//function call to check declared variables that are not used. 		
 					checkVariables(line,lineCount);
 					//function call to check function calls that have not been declared.
@@ -141,6 +145,10 @@ public class JSParser {
 		  }		
 	}
 	
+	/* This method is the actual implementation to check any unused variables.
+@param: line: Each line of the java script file to be parsed.
+@param: lineCount: the Line count in the Javascript file given.	
+*/
 	private static void checkVariables(String line, int lineCount){
 		
 		try {
@@ -214,7 +222,10 @@ public class JSParser {
 		}
 		
 	}
-	
+		/* This method is the actual implementation to check any function calls that are not declared.
+@param: line: Each line of the java script file to be parsed.
+@param: lineCount: the Line count in the Javascript file given.	
+*/
 	private static void checkFunction(String line, int lineCount){
 		
 		try {
@@ -258,13 +269,16 @@ public class JSParser {
 	}
 	
 	
-	
+			/*  This method is the actual implementation to check if/else statements that do not have curly brackets.
+@param: line: Each line of the java script file to be parsed.
+@param: lineCount: the Line count in the Javascript file given.	
+*/
 private static void checkIfElse(String line,int lineCount){
 			
 		try {
 				if(checkBrace){
-					//if there is if/else on the previous line and there is no brace in the current line add it to the 
-					//set of if and else with no braces
+					/*if there is if/else on the previous line and there is no brace in the current line add it to the 
+					set of if and else with no braces */
 					if(!line.contains("{")){
 						Variable var = new Variable();
 						var.setName(conditionType);
@@ -288,20 +302,17 @@ private static void checkIfElse(String line,int lineCount){
 						conditionType = "else";
 					}
 				}
-				
 		
-			
-			
-			
-			
-			
 		}catch(Exception e){
 			
 		}
 
 	}
 
-
+		/* This method is the actual implementation to check missing/extra curly brackets  .
+@param: line: Each line of the java script file to be parsed.
+@param: lineno: the Line count in the Javascript file given.	
+*/
 private static void checkBraces(String line,int lineno){
 	
 	
